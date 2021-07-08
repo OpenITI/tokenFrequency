@@ -1,6 +1,7 @@
 var counter = document.getElementById("counter");
 var output = document.getElementById("output");
 var temp = document.getElementById("temp");
+var stopWords = new Set();
 
 // define regular expression to define Arabic tokens for lookup:
 var arChars = [
@@ -108,15 +109,15 @@ var arTokRegex = new RegExp("["+arCharsStr+"]+", "g");
 
 
 function tokenize(s){
-  logProgress("Tokenizing...");
   let m = s.match(arTokRegex);
   console.log("finished tokenization");
-  logProgress("Counting...");
+
   return m;
 }
 
 function wordCount(s){
   console.log("start word count");
+  logProgress("Counting...");
   return tokenize(s)
     .reduce(
       function(n,r){return n.hasOwnProperty(r)?++n[r]:n[r]=1,n},
@@ -135,41 +136,72 @@ function displayAsTable(obj, destID, minCount, fn){
   var dest = document.getElementById(destID)
   removeAllChildNodes(dest);
 
+  var sortedKeys = Object.keys(obj).sort(function(a,b){return obj[b]-obj[a]});
+
+  // add metadata:
+  var numberOfWordsP = document.createElement("p");
+  numberOfWordsP.textContent = "Number of different tokens in the text: " + sortedKeys.length;
+
   // set up the download link:
   var csvDownloadLink = document.createElement("a");
   csvDownloadLink.textContent = "Download table as csv file";
-  //var href = "data:application/octet-stream,token%2Ccount%0A";
-  var href = 'data:text/plain;charset=utf-8,' + "Tord%2CCount%0A";
+  var href = 'data:text/plain;charset=utf-8,' + "Token%2CCount%0A";
 
-
-  var sortedKeys = Object.keys(obj).sort(function(a,b){return obj[b]-obj[a]});
+  // set up the html table:
   var table = document.createElement("table");
   var h = document.createElement("tr");
   var col1 = document.createElement("th");
-  col1.textContent="word";
+  col1.textContent="token";
   var col2 = document.createElement("th");
   col2.textContent="count";
   h.appendChild(col1);
   h.appendChild(col2);
   table.appendChild(h);
-
+  var incl = 0;
+  var inStopWords = 0;
   for (let i=0; i < sortedKeys.length; i++) {
     if (obj[sortedKeys[i]] < minCount) {
       break;
     }
-    href += sortedKeys[i] + "%2C" + obj[sortedKeys[i]] + "%0A";
-    var row = document.createElement("tr");
-    var word = document.createElement("td");
-    var count = document.createElement("td");
-    word.textContent=sortedKeys[i];
-    count.textContent=obj[sortedKeys[i]];
-    row.appendChild(word);
-    row.appendChild(count);
-    table.appendChild(row);
+    if (!stopWords.size || (!stopWords.has(sortedKeys[i]))) {
+      incl++;
+      href += obj[sortedKeys[i]] + "%2C" + sortedKeys[i] + "%0A";
+      var row = document.createElement("tr");
+      var word = document.createElement("td");
+      var count = document.createElement("td");
+      word.textContent=sortedKeys[i];
+      count.textContent=obj[sortedKeys[i]];
+      row.appendChild(word);
+      row.appendChild(count);
+      table.appendChild(row);
+    } else {
+      inStopWords ++;
+      console.log(sortedKeys[i] + stopWords.has(sortedKeys[i]));
+    }
   }
+  console.log("incl: "+incl);
   csvDownloadLink.setAttribute('href', href);
   csvDownloadLink.setAttribute("download", fn+"_token_count_min_"+minCount+"_tokens.csv");
+
   dest.appendChild(csvDownloadLink);
+  dest.appendChild(numberOfWordsP);
+  p = document.createElement("p");
+  var excl_for_length = sortedKeys.length - incl - inStopWords;
+  if (excl_for_length) {
+    p.innerHTML = "(" + excl_for_length + " tokens were excluded from the count because they appeared less than " + minCount + " times";
+  }
+  if (stopWords.size) {
+    if (excl_for_length) {
+      p.innerHTML += "<br/>and " + inStopWords + " tokens were excluded from the count because they were in the stopwords list)";
+    } else {
+      p.innerHTML += "(" + inStopWords + " tokens were excluded from the count because they were in the stopwords list)";
+    }
+  } else {
+    p.innerHTML += ")";
+  }
+  if (excl_for_length || stopWords.size) {
+    dest.appendChild(p)
+  }
   dest.appendChild(table);
 }
 
@@ -180,12 +212,38 @@ function logProgress(s){
   output.appendChild(p);
 }
 
+// Reset button
+
+function reset() {
+  document.getElementById('inputfile').value = "";
+  document.getElementById('stopwordsfile').value = "";
+  stopWords = new Set();
+  counter.value = "1";
+  removeAllChildNodes(output);
+  removeAllChildNodes(temp);
+}
+
+document.getElementById("resetButton")
+  .addEventListener("click", function() {
+    reset();
+  })
+// reset the file in the file chooser:
+
+document.getElementById('inputfile')
+  .addEventListener("click", function(){
+    this.value = "";
+    //console.log(this.files);
+  })
+
+  // run the token frequency script whenever a new file is uploaded:
+
 document.getElementById('inputfile')
   .addEventListener('change', function() {
+    //console.log(this.files);
     removeAllChildNodes(output);
     removeAllChildNodes(temp);
     console.log("file received");
-    logProgress("loading file...");
+    logProgress("loading file... (this may take a while for very large texts)");
     var fn = this.value;
     fn = fn.replace(/.*[\/\\]/, ''); // remove the fake path before the filename
     var minCount = parseInt(counter.value);
@@ -202,9 +260,26 @@ document.getElementById('inputfile')
   });
 
 
+  // extract stopwords when a new stopwords file is uploaded:
+
+  document.getElementById('stopwordsfile')
+    .addEventListener('change', function() {
+      console.log("stopwords file received");
+      var stopwordsfn = this.value;
+      stopwordsfn = stopwordsfn.replace(/.*[\/\\]/, ''); // remove the fake path before the filename
+      var swfr=new FileReader();
+      swfr.onload=function(){
+        console.log("stopwordsfile loaded");
+        stopWords = tokenize(swfr.result);
+        stopWords = new Set(stopWords);
+        console.log("stopwords includes az: "+stopWords.has("از"));
+      }
+      swfr.readAsText(this.files[0]);
+    });
+
+
 // counter: see https://codepen.io/rkoms/pen/OJbrGKX
 
-console.log(counter);
 document.getElementsByClassName('minus')[0]
   .addEventListener("click", function(e){
     console.log("clicked minus");
@@ -220,3 +295,17 @@ document.getElementsByClassName('minus')[0]
       var count = parseInt(counter.value);
       counter.value = parseInt(counter.value) + 1;
     });
+
+// toggle the display of the options:
+
+var optionsDiv = document.getElementById("options");
+document.getElementById("optionsButton")
+  .addEventListener("click", function(e){
+    if (optionsDiv.style.display !== "none") {
+      optionsDiv.style.display = "none";
+      this.value = "Options";
+    } else {
+      optionsDiv.style.display = "block";
+      this.value = "Hide options";
+    }
+  });

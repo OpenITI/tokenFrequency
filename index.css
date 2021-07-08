@@ -1,6 +1,14 @@
 body {
     font-family: 'Amiri';
 }
+table {
+  direction: rtl;
+	font-size: 22px;
+  text-align: right;
+}
+p {
+  font-size: 18px;
+}
 span {cursor:pointer; }
 
 .number{
@@ -27,6 +35,8 @@ span {cursor:pointer; }
   display: inline-block;
   vertical-align: middle;
 }
-table {
-	font-size: 22px;
+#inputfile, #stopwordsfile {
+  font-size: 16px;
+  margin:10px;
+
 }

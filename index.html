@@ -2,25 +2,41 @@
 <html>
 
 <head>
-    <title>Count Arabic token frequency</title>
+    <title>Arabic-script token frequencies in a text</title>
     <link rel="stylesheet" href="index.css"></link>
     <link href='https://fonts.googleapis.com/css?family=Amiri' rel='stylesheet'></link>
 </head>
 
+
+
 <body>
-    <h1>Token frequency in an Arabic text</h1>
-    <p>Use the button below to upload a text for which you want to see the frequency of the (Arabic) tokens.</p>
-    <p>Include words that appear at least this amount of times:</p>
-    <div class="number">
-	    <span class="minus">-</span>
-	    <input type="text" value="1" id="counter"/>
-	    <span class="plus">+</span>
+    <h1>Arabic-script token frequencies in a text</h1>
+    <p>Use the button below to upload a text for which you want to see the frequency
+      of each of the Arabic-script tokens in it.</p>
+
+    <input type="file" name="inputfile" id="inputfile">
+
+    <input type="button" name="optionsButton" id="optionsButton" value="Options">
+
+    <div id="options" style="display: none;">
+      <h3>Options:</h3>
+      <input type="button" name="resetButton" id="resetButton" value="Reset">
+      <p>Only include words that appear at least this amount of times:</p>
+      <div class="number">
+  	    <span class="minus">-</span>
+  	    <input type="text" value="1" id="counter"/>
+  	    <span class="plus">+</span>
+      </div>
+      <p>
+        Add a list of stop words you want to ignore (you can get lists of Arabic stop words
+        <a href="https://github.com/mohataher/arabic-stop-words/blob/master/list.txt" target="_blank">here</a>
+        and
+        <a href="https://countwordsfree.com/stopwords/arabic" target="_blank">here</a>,
+        or create your own stopwords file - a plain text file with one word per line):
+      </p>
+      <input type="file" name="stopwordsfile" id="stopwordsfile">
     </div>
 
-    <br>
-    <input type="file" name="inputfile"
-            id="inputfile">
-    <br>
     <div id="temp"></div>
     <pre id="output"></pre>
     <script type="text/javascript" src="index.js"></script>
