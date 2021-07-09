@@ -21,24 +21,136 @@
     <div id="options" style="display: none;">
       <h3>Options:</h3>
       <input type="button" name="resetButton" id="resetButton" value="Reset">
-      <p>Only include words that appear at least this amount of times:</p>
+
+      <p>* Only include words that appear at least this amount of times:</p>
       <div class="number">
   	    <span class="minus">-</span>
   	    <input type="text" value="1" id="counter"/>
   	    <span class="plus">+</span>
       </div>
+
       <p>
-        Add a list of stop words you want to ignore (you can get lists of Arabic stop words
+        * Add a list of stop words you want to ignore (you can get lists of Arabic stop words
         <a href="https://github.com/mohataher/arabic-stop-words/blob/master/list.txt" target="_blank">here</a>
         and
         <a href="https://countwordsfree.com/stopwords/arabic" target="_blank">here</a>,
         or create your own stopwords file - a plain text file with one word per line):
       </p>
       <input type="file" name="stopwordsfile" id="stopwordsfile">
+      <p>
+        * Tokenization:
+      </p>
+      <div id="tokenizeDiv">
+        <input type="radio" name="tokenizerButton" id="defaultTokenizer" checked>
+        <label for="defaultTokenizer">
+          default
+          <sup><a href="#" class="tooltip">?</a></sup>
+        </label>
+        <input type="radio" name="tokenizerButton" id="customTokenizer">
+        <label for="customTokenizer">custom regular expression:</label>
+        <input type="text" value="" id="customTokenizerRegex"/>
+
+      </div>
+      <div>
+        <input type="checkbox" name="headerSplitterCheck" id="headerSplitterCheck" checked>
+        <label for="headerSplitterCheck">
+          Split off a metadata header at the top of the document of which the
+          end is marked with this string or regular expression
+          (default: OpenITI metadata header splitter):
+        </label>
+        <br/>
+        <input type="text" name="headerSplitter" id="headerSplitter" value="#META#Header#End">
+      </div>
+    </div>
+
+    <div class="modal" id="defaultTokenizerModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>By default, any sequence of the following unicode characters is considered a token:</p>
+        <ul>
+          <li>ء	ARABIC LETTER HAMZA</li>
+          <li>آ	ARABIC LETTER ALEF WITH MADDA ABOVE</li>
+          <li>أ	ARABIC LETTER ALEF WITH HAMZA ABOVE</li>
+          <li>ؤ	ARABIC LETTER WAW WITH HAMZA ABOVE</li>
+          <li>إ	ARABIC LETTER ALEF WITH HAMZA BELOW</li>
+          <li>ئ	ARABIC LETTER YEH WITH HAMZA ABOVE</li>
+          <li>ا	ARABIC LETTER ALEF</li>
+          <li>ب	ARABIC LETTER BEH</li>
+          <li>ة	ARABIC LETTER TEH MARBUTA</li>
+          <li>ت	ARABIC LETTER TEH</li>
+          <li>ث	ARABIC LETTER THEH</li>
+          <li>ج	ARABIC LETTER JEEM</li>
+          <li>ح	ARABIC LETTER HAH</li>
+          <li>خ	ARABIC LETTER KHAH</li>
+          <li>د	ARABIC LETTER DAL</li>
+          <li>ذ	ARABIC LETTER THAL</li>
+          <li>ر	ARABIC LETTER REH</li>
+          <li>ز	ARABIC LETTER ZAIN</li>
+          <li>س	ARABIC LETTER SEEN</li>
+          <li>ش	ARABIC LETTER SHEEN</li>
+          <li>ص	ARABIC LETTER SAD</li>
+          <li>ض	ARABIC LETTER DAD</li>
+          <li>ط	ARABIC LETTER TAH</li>
+          <li>ظ	ARABIC LETTER ZAH</li>
+          <li>ع	ARABIC LETTER AIN</li>
+          <li>غ	ARABIC LETTER GHAIN</li>
+          <li>ـ	ARABIC TATWEEL</li>
+          <li>ف	ARABIC LETTER FEH</li>
+          <li>ق	ARABIC LETTER QAF</li>
+          <li>ك	ARABIC LETTER KAF</li>
+          <li>ل	ARABIC LETTER LAM</li>
+          <li>م	ARABIC LETTER MEEM</li>
+          <li>ن	ARABIC LETTER NOON</li>
+          <li>ه	ARABIC LETTER HEH</li>
+          <li>و	ARABIC LETTER WAW</li>
+          <li>ى	ARABIC LETTER ALEF MAKSURA</li>
+          <li>ي	ARABIC LETTER YEH</li>
+          <li>ً	ARABIC FATHATAN</li>
+          <li>ٌ	ARABIC DAMMATAN</li>
+          <li>ٍ	ARABIC KASRATAN</li>
+          <li>َ	ARABIC FATHA</li>
+          <li>ُ	ARABIC DAMMA</li>
+          <li>ِ	ARABIC KASRA</li>
+          <li>ّ	ARABIC SHADDA</li>
+          <li>ْ	ARABIC SUKUN</li>
+          <li>٠	ARABIC-INDIC DIGIT ZERO</li>
+          <li>١	ARABIC-INDIC DIGIT ONE</li>
+          <li>٢	ARABIC-INDIC DIGIT TWO</li>
+          <li>٣	ARABIC-INDIC DIGIT THREE</li>
+          <li>٤	ARABIC-INDIC DIGIT FOUR</li>
+          <li>٥	ARABIC-INDIC DIGIT FIVE</li>
+          <li>٦	ARABIC-INDIC DIGIT SIX</li>
+          <li>٧	ARABIC-INDIC DIGIT SEVEN</li>
+          <li>٨	ARABIC-INDIC DIGIT EIGHT</li>
+          <li>٩	ARABIC-INDIC DIGIT NINE</li>
+          <li>ٮ	ARABIC LETTER DOTLESS BEH</li>
+          <li>ٰ	ARABIC LETTER SUPERSCRIPT ALEF</li>
+          <li>ٹ	ARABIC LETTER TTEH</li>
+          <li>پ	ARABIC LETTER PEH</li>
+          <li>چ	ARABIC LETTER TCHEH</li>
+          <li>ژ	ARABIC LETTER JEH</li>
+          <li>ک	ARABIC LETTER KEHEH</li>
+          <li>گ	ARABIC LETTER GAF</li>
+          <li>ی	ARABIC LETTER FARSI YEH</li>
+          <li>ے	ARABIC LETTER YEH BARREE</li>
+          <li>۱	EXTENDED ARABIC-INDIC DIGIT ONE</li>
+          <li>۲	EXTENDED ARABIC-INDIC DIGIT TWO</li>
+          <li>۳	EXTENDED ARABIC-INDIC DIGIT THREE</li>
+          <li>۴	EXTENDED ARABIC-INDIC DIGIT FOUR</li>
+          <li>۵	EXTENDED ARABIC-INDIC DIGIT FIVE</li>
+          <li>۶	EXTENDED ARABIC-INDIC DIGIT SIX</li>
+          <li>۷	EXTENDED ARABIC-INDIC DIGIT SEVEN</li>
+          <li>۸	EXTENDED ARABIC-INDIC DIGIT EIGHT</li>
+          <li>۹	EXTENDED ARABIC-INDIC DIGIT NINE</li>
+          <li>۰	EXTENDED ARABIC-INDIC DIGIT ZERO</li>
+        </ul>
+      </div>
     </div>
 
     <div id="temp"></div>
     <pre id="output"></pre>
+
+
     <script type="text/javascript" src="index.js"></script>
 
 </body>

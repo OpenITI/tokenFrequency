@@ -1,6 +1,8 @@
 var counter = document.getElementById("counter");
 var output = document.getElementById("output");
 var temp = document.getElementById("temp");
+var headerSplitterCheck = document.getElementById("headerSplitterCheck");
+var headerSplitterInput = document.getElementById("headerSplitter");
 var stopWords = new Set();
 
 // define regular expression to define Arabic tokens for lookup:
@@ -108,23 +110,32 @@ var arTokRegex = new RegExp("["+arCharsStr+"]+", "g");
 //console.log(tokenize("الحمد،لله"));
 
 
-function tokenize(s){
-  let m = s.match(arTokRegex);
+function tokenize(s, tokRegex){
+  let m = s.match(tokRegex);
   console.log("finished tokenization");
-
   return m;
 }
 
-function wordCount(s){
+/*var test_str = `
+وی
+لام سامهو
+وس
+
+PageV00P001
+`
+var test_toks = tokenize(test_str);
+console.log(test_toks);*/
+
+function wordCount(s, tokRegex){
   console.log("start word count");
   logProgress("Counting...");
-  return tokenize(s)
+  return tokenize(s, tokRegex)
     .reduce(
       function(n,r){return n.hasOwnProperty(r)?++n[r]:n[r]=1,n},
       {}
     )
-
 }
+//console.log(wordCount(test_str));
 
 function removeAllChildNodes(parent) {
     while (parent.firstChild) {
@@ -212,6 +223,12 @@ function logProgress(s){
   output.appendChild(p);
 }
 
+function removeHeader(s, splitter) {
+  var spl = s.substring(0,5000).split(splitter); // limit search for header splitter to first 5000 characters
+  return spl[spl.length-1] + s.substring(5000,);
+}
+
+
 // Reset button
 
 function reset() {
@@ -219,6 +236,9 @@ function reset() {
   document.getElementById('stopwordsfile').value = "";
   stopWords = new Set();
   counter.value = "1";
+  document.getElementById("defaultTokenizer").checked = true;
+  headerSplitterCheck.checked = true;
+  headerSplitterInput.value = "#META#Header#End";
   removeAllChildNodes(output);
   removeAllChildNodes(temp);
 }
@@ -227,6 +247,7 @@ document.getElementById("resetButton")
   .addEventListener("click", function() {
     reset();
   })
+
 // reset the file in the file chooser:
 
 document.getElementById('inputfile')
@@ -247,14 +268,38 @@ document.getElementById('inputfile')
     var fn = this.value;
     fn = fn.replace(/.*[\/\\]/, ''); // remove the fake path before the filename
     var minCount = parseInt(counter.value);
+    if (headerSplitterCheck.checked == true){
+      var headerSplitter = headerSplitterInput.value;
+      headerSplitter = new RegExp(headerSplitter, "g");
+    } else {
+      var headerSplitter = "";
+    }
+    if (document.getElementById("defaultTokenizer").checked == true){
+      var tokRegex = arTokRegex;
+    } else {
+      var tokRegex = document.getElementById("customTokenizerRegex").value;
+      tokRegex = new RegExp(tokRegex, "g");
+    }
+    console.log(tokRegex);
+
     var fr=new FileReader();
     fr.onload=function(){
       console.log("file loaded");
+      var text = fr.result;
+      if (headerSplitter){
+        text = removeHeader(fr.result, headerSplitter);
+        console.log("header removed");
+      }
       logProgress("file loaded! Counting words...");
-      var cnt = wordCount(fr.result);
+      var cnt = wordCount(text, tokRegex);
       console.log("finished counting words");
 
       displayAsTable(cnt, "output", minCount, fn);
+
+      if (optionsDiv.style.display !== "none") {
+        optionsDiv.style.display = "none";
+        document.getElementById("optionsButton").value="Options";
+      }
     }
     fr.readAsText(this.files[0]);
   });
@@ -309,3 +354,28 @@ document.getElementById("optionsButton")
       this.value = "Hide options";
     }
   });
+
+
+// modal for the display of the default :
+// Get the modal
+var modal = document.getElementById("defaultTokenizerModal");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal
+document.getElementsByClassName("tooltip")[0].onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
